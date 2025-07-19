@@ -34,6 +34,18 @@ jobs:
           $shortSha = $env:GITHUB_SHA.Substring(0,7)
           echo "SHORT_SHA=$shortSha" >> $env:GITHUB_ENV
 
+      - name: Ensure required folders exist
+        shell: pwsh
+        run: |
+          if (-Not (Test-Path -Path "assets")) {
+            Write-Error "Missing 'assets' folder. Cannot build."
+            exit 1
+          }
+          if (-Not (Test-Path -Path "data")) {
+            Write-Error "Missing 'data' folder. Cannot build."
+            exit 1
+          }
+
       - name: Create a tag
         shell: pwsh
         run: |
