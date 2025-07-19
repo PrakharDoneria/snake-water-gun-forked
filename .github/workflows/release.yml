@@ -1,0 +1,42 @@
+name: Python to EXE and Release
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+
+      - name: Get short commit hash
+        id: get_short_sha
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Build executable with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --add-data "data:data" main.py -n snake-water-gun
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.SHORT_SHA }}
+          name: "Release ${{ env.SHORT_SHA }}"
+          files: dist/snake-water-gun
