@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: windows-latest  
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -30,6 +30,13 @@ jobs:
       - name: Get short commit hash
         id: get_short_sha
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $env:GITHUB_ENV
+
+      - name: Create a tag
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git tag $env:SHORT_SHA
+          git push origin $env:SHORT_SHA
 
       - name: Build executable with PyInstaller
         run: |
