@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,15 +29,21 @@ jobs:
 
       - name: Get short commit hash
         id: get_short_sha
-        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $env:GITHUB_ENV
 
       - name: Build executable with PyInstaller
         run: |
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --add-data "data:data" main.py -n snake-water-gun
+          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --add-data "data;data" main.py -n snake-water-gun
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snake-water-gun-exe
+          path: dist/snake-water-gun.exe
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.SHORT_SHA }}
           name: "Release ${{ env.SHORT_SHA }}"
-          files: dist/snake-water-gun
+          files: dist/snake-water-gun.exe
